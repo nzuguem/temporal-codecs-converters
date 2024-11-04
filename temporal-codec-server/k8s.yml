@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: temporal-codec-server
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app: temporal-codec-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temporal-codec-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: temporal-codec-server
+  template:
+    metadata:
+      labels:
+        app: temporal-codec-server
+    spec:
+      containers:
+      - name: temporal-codec-server
+        image: nzuguem/temporal-codec-server
+        ports:
+        - name: http
+          containerPort: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: temporal-codec-server
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: temporal-codec-server.127.0.0.1.nip.io
+      http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: temporal-codec-server
+                  port:
+                    name: http
